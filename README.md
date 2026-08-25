@@ -15,8 +15,8 @@ being true.
 ### `okf-bundle`
 
 Builds an [Open Knowledge Format](https://github.com/GoogleCloudPlatform/open-knowledge-format)
-v0.2 bundle for a codebase — markdown with YAML frontmatter, versioned next to
-the code — and wires a gate that fails the build when the two drift apart.
+v0.2 bundle for a codebase (markdown with YAML frontmatter, versioned next to
+the code) and wires a gate that fails the build when the two drift apart.
 
 The format is the easy half. The gate is the point:
 
@@ -31,7 +31,7 @@ Every rule also states what it does **not** prove. A green build that implies
 "reviewed and correct" is worse than no build, because it stops people looking.
 
 The validator is language-agnostic and ships with a `--self-test` that breaks a
-bundle 18 ways and confirms each break is caught — plus 6 pieces of legitimate
+bundle 18 ways and confirms each break is caught, plus 6 pieces of legitimate
 but awkward markdown that must stay green. That second half matters as much as
 the first: a gate that fails on correct input gets deleted.
 
