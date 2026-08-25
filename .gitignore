@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.DS_Store
+*.skill
+
+# The global ~/.gitignore hides scripts/, which would drop this skill's
+# executable core from the published repo. Git cannot re-include a file whose
+# parent directory is excluded, so the directory itself has to be un-excluded.
+!scripts/
