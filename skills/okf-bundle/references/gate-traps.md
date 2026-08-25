@@ -5,7 +5,7 @@ Every trap below was found by deliberately breaking a bundle and watching the
 suite stay green. None was found by re-reading the code.
 
 **The pattern:** every silent failure lived in a helper that *transforms text
-before checking it* — a YAML loader, a fence stripper, a comment stripper. The
+before checking it*: a YAML loader, a fence stripper, a comment stripper. The
 transform quietly produced nothing, the check ran over nothing and passed, and
 the build went green. Treat every such helper as guilty until you have watched
 it fail.
@@ -28,7 +28,7 @@ it fail.
 YAML loaders resolve unquoted scalars aggressively. `2027-02-24T00:00:00Z`
 becomes a date object, not a string. A `.(string)` assertion or an
 `isinstance(v, str)` test then yields nothing, the check `continue`s, and every
-freshness rule is inert — on exactly the values a real bundle writes.
+freshness rule is inert, on exactly the values a real bundle writes.
 
 Normalise through one accessor that accepts both, and distinguish *absent* from
 *present but not a timestamp*:
@@ -47,8 +47,8 @@ The same applies to `yes`/`no`/`on`/`off` (booleans), `1.0` (float) and `null`.
 ## Silently dropped entries
 
 A `sources` list whose entry holds one non-string key decodes as `{1: ...}`.
-Code that filters for string-keyed mappings drops that entry — and with it every
-check on that entry — while the field still looks present.
+Code that filters for string-keyed mappings drops that entry, and with it every
+check on that entry, while the field still looks present.
 
 A malformed element must invalidate the whole field, not vanish from it:
 
@@ -74,13 +74,13 @@ Follow CommonMark: record the opening character and its run length, and close
 only on a run of the same character at least as long.
 
 **Ignoring an unbalanced fence.** One unclosed fence makes every later line
-blank, so the rest of the file stops being checked — silently, with a green
+blank, so the rest of the file stops being checked, silently, with a green
 build. An unclosed fence is broken markdown anyway: **fail on it**.
 
 ## Comment stripping
 
 When checking that a literal still exists in a source file, strip comments
-first — a renamed symbol usually survives in the comment explaining the rename,
+first. A renamed symbol usually survives in the comment explaining the rename,
 and counting that as "still present" misses the exact drift being hunted.
 
 Two ways this bites back, in opposite directions:
@@ -91,7 +91,7 @@ fails. Step over `"`, `'` and backtick literals while scanning.
 
 **An unterminated `/*`.** Returning the truncated prefix discards the rest of the
 file, so one odd string in a source turns every literal in the document red at
-once — for a reason no author can act on. Return the input unchanged instead.
+once, for a reason no author can act on. Return the input unchanged instead.
 
 A false positive is not the safer failure here. It fires on ordinary edits, and
 that is how a gate gets deleted.
@@ -109,9 +109,9 @@ re.search(r"(?<![A-Za-z0-9_])" + re.escape(lit) + r"(?![A-Za-z0-9_])", text)
 
 Two rules need a section body, and both are wrong when unbounded:
 
-- "Is there a fenced block under `# Computation`" — an unbounded search finds a
+- "Is there a fenced block under `# Computation`": an unbounded search finds a
   fence under a *later* heading, so an empty section passes.
-- "Is `# Attestation` non-empty" — measuring to end of file counts the next
+- "Is `# Attestation` non-empty": measuring to end of file counts the next
   section's text as this section's content.
 
 Take the text from the heading to the **next top-level heading**.
@@ -151,11 +151,11 @@ Each of these was observed, in both directions:
 
 | Pattern | Misses | Falsely fires on |
 |---|---|---|
-| Inline link | `[the [inner] doc](x.md)` — nested brackets | |
+| Inline link | `[the [inner] doc](x.md)`, nested brackets | |
 | Reference definition `^\[..\]:` | | `[ -f .env ]: source .env` in a shell example |
 | Footnote `\[\^(..)\]` | | a `[^0-9]+` character class in a code example |
 | Reference usage `\]\[` | | `results[0][name]`, `[draft] [stable]` |
-| Link destination | `[x](<path with space>)` — angle brackets | |
+| Link destination | `[x](<path with space>)`, angle brackets | |
 | Heading `^## (\d\S*)$` | a heading it does not fully match becomes invisible to **every** check on that file | |
 
 That last row is the nastiest shape: a regex that *skips* what it cannot parse
@@ -173,7 +173,7 @@ open(p, "w").write(mutate(open(p).read()))
 ```
 
 truncates the file before the read is evaluated, so every mutation became a
-no-op — while the run still reported "caught" for roughly half of them, because
+no-op, while the run still reported "caught" for roughly half of them, because
 an empty file trips a different rule. Read fully, then write.
 
 The general lesson: **a test that reports "caught" is not proof it caught the

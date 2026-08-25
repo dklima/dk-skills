@@ -1,8 +1,8 @@
-# OKF v0.2 — the format
+# OKF v0.2: the format
 
 Condensed from the specification. The authority is
-https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md —
-fetch it when a detail matters, and never answer a conformance question from
+https://github.com/GoogleCloudPlatform/open-knowledge-format/blob/main/SPEC.md.
+Fetch it when a detail matters, and never answer a conformance question from
 memory. This file exists so routine authoring needs no fetch.
 
 ## Contents
@@ -43,21 +43,21 @@ Timestamps are ISO 8601 with an explicit UTC offset: `2026-06-30T14:00:00Z`.
 
 All optional. Absence carries meaning and is never a rejection.
 
-**`sources`** — a list, or a bare mapping treated as a list of one.
+**`sources`** is a list, or a bare mapping treated as a list of one.
 
-- `resource` — REQUIRED per entry. An absolute URL, a bundle-relative path, a
+- `resource`: REQUIRED per entry. An absolute URL, a bundle-relative path, a
   path into `references/`, or a scope descriptor a consumer cannot follow (for
   example `all queries in project X`).
-- `id` — optional, but SHOULD be present when the body cites the source. It is
+- `id`: optional, but SHOULD be present when the body cites the source. It is
   the footnote label used for per-claim attribution.
-- `title`, `author`, `usage_count`, `last_modified` — optional credibility
+- `title`, `author`, `usage_count`, `last_modified`: optional credibility
   signals. `usage_window: { from, to }` is written once as a sibling of
   `sources` and frames every `usage_count`.
 
-**`generated: { by, at }`** — who wrote the concept and when. `by` follows the
+**`generated: { by, at }`** records who wrote the concept and when. `by` follows the
 actor convention.
 
-**`verified`** — a mapping or a list of `{ by, at }`. Consumers MUST treat a
+**`verified`** is a mapping or a list of `{ by, at }`. Consumers MUST treat a
 bare mapping as a one-element list.
 
 **Trust tiers derive ONLY from `verified`:**
@@ -69,12 +69,12 @@ bare mapping as a one-element list.
 | present with a `human:<id>` actor | Human-reviewed |
 
 `generated.by` confers no tier, whoever wrote it. The spec says nothing about
-whether the verifier may be the author — that is a local decision, and
+whether the verifier may be the author. That is a local decision, and
 `conventions.md` argues for requiring independence.
 
-**`status`** — `draft` | `stable` | `deprecated`. Absent means `stable`.
+**`status`** is `draft`, `stable` or `deprecated`. Absent means `stable`.
 
-**`stale_after`** — an absolute instant after which the concept should be
+**`stale_after`** is an absolute instant after which the concept should be
 re-read. The spec only defines the field; acting on it is the producer's job.
 
 ## Actor convention
@@ -97,17 +97,17 @@ and body links:
 - **Relative**, e.g. `../computations/revenue.md`.
 
 The spec sets no floor, so a relative path may leave the bundle. That breaks
-tarball distribution — a deliberate trade, see `conventions.md`.
+tarball distribution, a deliberate trade. See `conventions.md`.
 
 Per-claim attribution uses markdown footnotes whose labels match `sources[].id`.
 
 ## Reserved files
 
-**`index.md`** — a directory listing, no frontmatter, with ONE exception: the
+**`index.md`** is a directory listing, no frontmatter, with ONE exception: the
 bundle-root `index.md` MAY carry `okf_version: "0.2"` and nothing else. Entries
 are `* [Title](path) - description`, grouped under headings.
 
-**`log.md`** — date-grouped entries, newest first:
+**`log.md`** holds date-grouped entries, newest first:
 
 ```markdown
 # Update Log
@@ -130,9 +130,9 @@ are described as convention.
 | Field | Status | Notes |
 |---|---|---|
 | `runtime` | REQUIRED | Producer-chosen; there is no registry. It fixes what `parameters` mean and how executor and attester read the computation. |
-| `parameters` | Optional | List of `{ name, type, required }` — the typed holes an agent may fill. |
+| `parameters` | Optional | List of `{ name, type, required }`, the typed holes an agent may fill. |
 | `computation` | Optional | Path to a file holding the computation. Absent means the body's `# Computation` fenced block IS the computation. |
-| `executor` | Optional | `{ resource, receipt }`. `resource` names run instructions; `receipt` lists the fields a run must return — the evidence an attester inspects. |
+| `executor` | Optional | `{ resource, receipt }`. `resource` names run instructions; `receipt` lists the fields a run must return, the evidence an attester inspects. |
 | `attester` | Optional | `{ resource }` naming deterministic, non-LLM code that takes a receipt and returns a verdict. |
 
 **The binding rule that is easy to break:** an agent may only supply *values*
@@ -155,4 +155,4 @@ Consumers **MUST NOT** reject a bundle for: missing optional fields, unknown
 `type` values, unknown extra keys, broken cross-links, or a missing `index.md`.
 
 That constrains *consumers*. It does not stop an author from checking their own
-bundle harder — which is the entire basis for the house half of the gate.
+bundle harder, which is the entire basis for the house half of the gate.

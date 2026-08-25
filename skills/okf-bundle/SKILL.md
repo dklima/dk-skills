@@ -99,7 +99,7 @@ document that legitimately contains example markdown.
 **PyYAML** (`pip install pyyaml`), and exits with that message if it is
 missing. The dependency is deliberate: hand-rolling a YAML parser for
 `sources[]` and `parameters[]` would be exactly the kind of helper that
-quietly produces nothing and lets every check pass — see
+quietly produces nothing and lets every check pass. See
 `references/gate-traps.md`.
 
 ```sh

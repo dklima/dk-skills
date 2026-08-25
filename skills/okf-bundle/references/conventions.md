@@ -1,7 +1,7 @@
 # House conventions
 
 Local rules on top of OKF v0.2. Each one exists because the bundle is worse
-without it. The reasons matter more than the rules — a project may decide
+without it. The reasons matter more than the rules: a project may decide
 differently, but it should decide knowingly.
 
 ## Contents
@@ -30,7 +30,7 @@ guess it from git config, and do not put yourself there.
 `verified[].by` must differ from `generated.by`, and the gate enforces it.
 
 Without that rule the Human-reviewed tier is a stamp the author applies to
-themselves in the same edit — which is exactly the distinction the tier exists
+themselves in the same edit, which is exactly the distinction the tier exists
 to draw. The consequence is deliberate: **every concept is born Unverified**,
 and rises only when someone else signs.
 
@@ -60,13 +60,13 @@ they read it carefully. Write that limit into the gate's own comments rather
 than letting the green build imply more.
 
 If it ever blocks real work because no reviewer is available, downgrade it to a
-warning **with that evidence in hand** — not pre-emptively.
+warning **with that evidence in hand**, not pre-emptively.
 
 ## Links are relative
 
 The spec recommends bundle-relative `/...` paths, but GitHub resolves a leading
-`/` against the site root, not the bundle. For the usual audience — developers
-reading in an editor and on GitHub — relative paths work in both, and one rule
+`/` against the site root, not the bundle. For the usual audience (developers
+reading in an editor and on GitHub) relative paths work in both, and one rule
 then covers intra-bundle links and links out to source.
 
 **Resolution rule, stated once:** every relative path resolves against the
@@ -88,7 +88,7 @@ git ls-files --error-unmatch <path>
 ```
 
 Local-only design notes and personal runbooks are usually the most valuable
-content in the bundle — and they must be **rewritten into concept bodies**, not
+content in the bundle, and they must be **rewritten into concept bodies**, not
 linked. A dangling reference to a file only one person has is worse than no
 reference.
 
@@ -115,7 +115,7 @@ in `mongo.go`.
 Use `house:from`, not `okf:from`. The convention is local, and prefixing it with
 the specification's name implies the specification defines it.
 
-**What it catches:** renames, deletions, drifted enumerated values — most real
+**What it catches:** renames, deletions, drifted enumerated values: most real
 rot. **What it does not:** prose that describes the semantics wrongly. Only a
 human read catches that, which is what the freshness gate asks for.
 

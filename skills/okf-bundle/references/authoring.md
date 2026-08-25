@@ -34,7 +34,8 @@ would be 90% overlap with an existing one, the two are one document.
 ## Write from the code
 
 Read the source and describe what it does. Do not paraphrase the README, and do
-not treat a generated specification as authoritative — both are usually behind.
+not treat a generated specification as authoritative, because both are usually
+behind.
 Measuring that is worth doing once:
 
 ```sh
@@ -46,7 +47,7 @@ A snapshot six weeks behind the handlers will happily teach the bundle its own
 errors.
 
 The highest-value document is usually the one that only exists in someone's
-head or on one laptop — the end-to-end runbook, the environment gotchas, the
+head or on one laptop: the end-to-end runbook, the environment gotchas, the
 failure whose symptom looks like something else. Prioritise by that, not by
 what is easy to write.
 
@@ -67,7 +68,7 @@ Grade every claim by what backs it, and say so in the document:
 
 A concrete-looking number with no source reads as evidence without being any. If
 a sample response shows `"count": 208` and nothing in the bundle can produce
-that number, use a generic placeholder instead — the exact value teaches the
+that number, use a generic placeholder instead. The exact value teaches the
 reader nothing and changes daily.
 
 When a document describes something that does not currently work, mark it
@@ -132,11 +133,11 @@ Four things that document gets right and drafts usually get wrong:
    must tolerate, and it stops a reader putting an envelope field inside a
    payload that rejects unknown properties.
 3. **One fenced block under `# Computation`.** Put the response sample under its
-   own `# Response` heading — a `## Response` subsection is still inside the
+   own `# Response` heading, because a `## Response` subsection is still inside the
    computation section, and a mechanical extractor may grab it instead.
 4. **`# Attestation` states the gap out loud.** The type is called "Attested";
    a document that attests to nothing must say so rather than leave the reader
-   to infer it from an absent field. Omit `attester` — never invent one.
+   to infer it from an absent field. Omit `attester`, never invent one.
 
 Include `executor.receipt` only for fields a run actually returns. Omitting is
 better than guessing.
@@ -150,5 +151,5 @@ better than guessing.
 4. The concepts with in-repo evidence.
 5. The rest of the architecture and API documents.
 6. The playbooks. The end-to-end one is worth the most time.
-7. Only then anything needing captured evidence — and only after the capture.
+7. Only then anything needing captured evidence, and only after the capture.
 8. Fill the root index, write the log entry, add one line to the README.
