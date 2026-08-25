@@ -92,28 +92,37 @@ front:
 | `references/conventions.md` | Actors, naming, link style. |
 | `references/gate-traps.md` | The ways a gate goes green while checking nothing. Read this before porting the rules to Go, Node or Rust. |
 
-## Agentic friendly
+## For an agent reading this repo
 
-Nothing here assumes a particular agent, or an agent at all.
+Start at `skills/okf-bundle/SKILL.md`. It is the entry point, and each step
+names the one reference file that step needs. Read a reference when you reach
+the step that cites it. Do not load all four up front.
 
-- **Progressive disclosure.** `SKILL.md` is 146 lines and names the reference
-  file for each job. The agent reads one of them when it needs it, so the four
-  references stay out of the context window until they earn a place in it.
-- **One script, no install.** The validator is a single file on the standard
-  library plus PyYAML. No config file, no network call, no state on disk.
-- **Read-only by default.** Only `--init` writes, and it refuses a directory
-  that already holds files.
-- **Machine-readable results.** Exit 0 when clean, 1 when anything is reported,
-  2 on bad usage. Findings print one per line, grouped by half:
+```
+skills/okf-bundle/
+  SKILL.md                  the workflow, in order, plus what not to do
+  scripts/okf_validate.py   the gate. Run it, do not reimplement it
+  references/               spec, conventions, authoring, gate traps
+```
+
+- **Asked to build a bundle?** Follow the workflow in `SKILL.md` from step 1.
+  The gate is wired at step 3, before any prose gets written.
+- **Asked to change or port the validator?** Read `references/gate-traps.md`
+  first. It is the list of ways a gate reports success while checking nothing.
+- **Before you report a green run**, run `--self-test`. It breaks a scaffold 18
+  ways and tells you which breaks were caught.
+- **Read the output, not the exit code alone.** Exit 0 is clean, 1 is findings,
+  2 is bad usage. Findings print one per line, grouped by half:
   ```
   HOUSE (1):
     [HOUSE] architecture/example.md: reference '../nope/missing.md' does not resolve (from knowledge/architecture)
   ```
-- **Verifiable before it is trusted.** `--self-test` breaks a scaffold 18 ways
-  and reports which breaks were caught. An agent can prove the gate works, then
-  believe the green run.
-- **Plain text end to end.** Bundle, skill and references are markdown in git.
-  An agent with a file reader and a shell has everything it needs.
+- **Do not sign your own work.** Leave `verified` absent. `SKILL.md` closes with
+  three more traps of the same kind. Read that section before you finish.
+
+The skill is markdown and the validator is one Python 3 file on the standard
+library plus PyYAML. Nothing here needs Claude Code, a network call, or a
+config file.
 
 ## Licence
 
