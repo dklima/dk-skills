@@ -92,6 +92,29 @@ front:
 | `references/conventions.md` | Actors, naming, link style. |
 | `references/gate-traps.md` | The ways a gate goes green while checking nothing. Read this before porting the rules to Go, Node or Rust. |
 
+## Agentic friendly
+
+Nothing here assumes a particular agent, or an agent at all.
+
+- **Progressive disclosure.** `SKILL.md` is 146 lines and names the reference
+  file for each job. The agent reads one of them when it needs it, so the four
+  references stay out of the context window until they earn a place in it.
+- **One script, no install.** The validator is a single file on the standard
+  library plus PyYAML. No config file, no network call, no state on disk.
+- **Read-only by default.** Only `--init` writes, and it refuses a directory
+  that already holds files.
+- **Machine-readable results.** Exit 0 when clean, 1 when anything is reported,
+  2 on bad usage. Findings print one per line, grouped by half:
+  ```
+  HOUSE (1):
+    [HOUSE] architecture/example.md: reference '../nope/missing.md' does not resolve (from knowledge/architecture)
+  ```
+- **Verifiable before it is trusted.** `--self-test` breaks a scaffold 18 ways
+  and reports which breaks were caught. An agent can prove the gate works, then
+  believe the green run.
+- **Plain text end to end.** Bundle, skill and references are markdown in git.
+  An agent with a file reader and a shell has everything it needs.
+
 ## Licence
 
 MIT.
