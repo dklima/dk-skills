@@ -43,7 +43,8 @@ Timestamps are ISO 8601 with an explicit UTC offset: `2026-06-30T14:00:00Z`.
 
 All optional. Absence carries meaning and is never a rejection.
 
-**`sources`** is a list, or a bare mapping treated as a list of one.
+**`sources`** is a list of entries. The bare-mapping shorthand is legal only
+for `verified`, so write the dash.
 
 - `resource`: REQUIRED per entry. An absolute URL, a bundle-relative path, a
   path into `references/`, or a scope descriptor a consumer cannot follow (for
@@ -89,12 +90,16 @@ The id after `human:` is unconstrained; an email is fine.
 
 ## Links and paths
 
-Two forms are legal for `resource`, `sources[].resource`, `executor.resource`
-and body links:
+Body links take two forms:
 
 - **Bundle-relative**, starting with `/`, resolved from the bundle root. The
   spec *recommends* this form.
 - **Relative**, e.g. `../computations/revenue.md`.
+
+The path-valued fields are `resource`, `sources[].resource`, `computation`,
+`executor.resource` and `attester.resource`. Each accepts the two forms above
+plus an absolute URL, e.g. `https://...`. A `sources[].resource` may instead
+be a scope descriptor, which is not a path.
 
 The spec sets no floor, so a relative path may leave the bundle. That breaks
 tarball distribution, a deliberate trade. See `conventions.md`.
