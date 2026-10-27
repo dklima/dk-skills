@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "dk-skills",
-  "description": "Skills for keeping documentation honest: knowledge that ships with the code and fails the build when it drifts.",
+  "description": "Skills for keeping a codebase honest: documentation that fails the build when it drifts, and reviews that catch the patterns the next agent will copy.",
   "owner": {
     "name": "Daniel Kuhl Lima",
     "url": "https://github.com/dklima"
@@ -10,7 +10,7 @@
     {
       "name": "skills",
       "source": "./",
-      "description": "Build an Open Knowledge Format v0.2 knowledge bundle for a codebase, with a CI gate that fails when the documents no longer match the code they describe.",
+      "description": "Build an Open Knowledge Format v0.2 knowledge bundle for a codebase, with a CI gate that fails when the documents no longer match the code they describe. Review a diff for broken windows: code or comments that a later agent will copy and so spread bad code.",
       "category": "documentation"
     }
   ]

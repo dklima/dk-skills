@@ -1,7 +1,7 @@
 # dk-skills
 
-Skills for Claude Code, aimed at one problem: documentation that quietly stops
-being true.
+Skills for Claude Code, aimed at code and documentation that quietly get worse:
+documentation that stops being true, and bad patterns that coding agents copy.
 
 ## Install
 
@@ -92,6 +92,24 @@ front:
 | `references/conventions.md` | Actors, naming, link style. |
 | `references/gate-traps.md` | The ways a gate goes green while checking nothing. Read this before porting the rules to Go, Node or Rust. |
 
+### `broken-windows`
+
+Reviews a diff for "broken windows": code or comments that a later agent will
+read, treat as the reference, and copy. One passable workaround becomes the
+template for the next ten changes. Based on
+[The broken windows theory of coding agents](https://www.manager.dev/newsletter/the-broken-windows-theory-of-coding-agents).
+
+The test for each pattern: what if 100 more agents do this exact same thing
+everywhere? The skill greps the repo to tell a new window from an existing
+convention, and still reports a diff that spreads a bad pattern that exists
+already.
+
+It reports only. It changes no code until you ask for the fixes.
+
+**Invoke it** with `/broken-windows`, or ask "did this change add broken
+windows?" or "what will the next agent copy from this diff?". With no target,
+it reviews the uncommitted changes, then the last commit.
+
 ## For an agent reading this repo
 
 Start at `skills/okf-bundle/SKILL.md`. It is the entry point, and each step
@@ -119,6 +137,9 @@ skills/okf-bundle/
   ```
 - **Do not sign your own work.** Leave `verified` absent. `SKILL.md` closes with
   three more traps of the same kind. Read that section before you finish.
+- **Asked to review a diff for patterns the next agent will copy?** Start at
+  `skills/broken-windows/SKILL.md`. It is one file, with no scripts or
+  references.
 
 The skill is markdown and the validator is one Python 3 file on the standard
 library plus PyYAML. Nothing here needs Claude Code, a network call, or a

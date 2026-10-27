@@ -1,7 +1,7 @@
 {
   "name": "skills",
-  "description": "Build an Open Knowledge Format v0.2 knowledge bundle for a codebase: markdown with YAML frontmatter, plus a language-agnostic gate that fails the build when a document quotes a name the code no longer has, when a link stops resolving, or when a re-read date passes without an independent review.",
-  "version": "0.1.0",
+  "description": "Build an Open Knowledge Format v0.2 knowledge bundle for a codebase: markdown with YAML frontmatter, plus a language-agnostic gate that fails the build when a document quotes a name the code no longer has, when a link stops resolving, or when a re-read date passes without an independent review. Also review a diff for broken windows: code or comments that a later agent will copy as a reference and so spread bad code.",
+  "version": "0.2.0",
   "author": {
     "name": "Daniel Kuhl Lima",
     "url": "https://github.com/dklima"
@@ -15,6 +15,9 @@
     "knowledge-base",
     "documentation-rot",
     "ci-gate",
-    "provenance"
+    "provenance",
+    "code-review",
+    "broken-windows",
+    "coding-agents"
   ]
 }
