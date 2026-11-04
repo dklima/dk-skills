@@ -94,8 +94,8 @@ front:
 
 ### `broken-windows`
 
-Reviews a diff for "broken windows": code or comments that a later agent will
-read, treat as the reference, and copy. One passable workaround becomes the
+Reviews a diff or existing code for "broken windows": code or comments that a
+later agent will read, treat as the reference, and copy. One passable workaround becomes the
 template for the next ten changes. Based on
 [The broken windows theory of coding agents](https://www.manager.dev/newsletter/the-broken-windows-theory-of-coding-agents).
 
@@ -108,7 +108,37 @@ It reports only. It changes no code until you ask for the fixes.
 
 **Invoke it** with `/broken-windows`, or ask "did this change add broken
 windows?" or "what will the next agent copy from this diff?". With no target,
-it reviews the uncommitted changes, then the last commit.
+it reviews the uncommitted changes, then the last commit. Name a folder, file or
+repo to audit the code that exists already.
+
+**Run it without asking (optional).** `scripts/broken_windows_hook.py` is a
+Claude Code hook. It blocks the end of a session turn and asks for the review
+when the code changed since the session started has 30 or more lines, or adds a
+word such as `hack` or `workaround`. It counts commits, uncommitted edits and
+untracked files. After each request, it counts only newer changes.
+
+The plugin does not turn the hook on. Copy the skill to `~/.claude/skills/`, then
+add this to the `hooks` object in `~/.claude/settings.json`:
+
+```json
+"SessionStart": [{ "hooks": [{ "type": "command", "command": "python3 ~/.claude/skills/broken-windows/scripts/broken_windows_hook.py", "timeout": 10 }] }],
+"Stop": [{ "hooks": [{ "type": "command", "command": "python3 ~/.claude/skills/broken-windows/scripts/broken_windows_hook.py", "timeout": 10 }] }]
+```
+
+Merge these entries with the entries you have. The hook has these limits:
+
+- It does not see a workaround of fewer than 30 lines with no marker word.
+- It does not see changes inside a submodule, or outside a git repository.
+- It turns off while an untracked file is bigger than 50 MB.
+- It counts only the file types in `CODE_FILE`, so a `.php` change never blocks.
+- It skips only the test paths in `TEST_FILE`, so `foo_test.py` counts as code.
+- It counts uncommitted edits that existed before the session, and a branch
+  switch or a rename counts too.
+- It writes loose objects to `.git`, and git prunes them later. After a prune,
+  the hook can ask again for lines it already asked about.
+
+Run its tests with
+`python3 skills/broken-windows/scripts/broken_windows_hook_test.py`.
 
 ## For an agent reading this repo
 
@@ -138,12 +168,12 @@ skills/okf-bundle/
 - **Do not sign your own work.** Leave `verified` absent. `SKILL.md` closes with
   three more traps of the same kind. Read that section before you finish.
 - **Asked to review a diff for patterns the next agent will copy?** Start at
-  `skills/broken-windows/SKILL.md`. It is one file, with no scripts or
-  references.
+  `skills/broken-windows/SKILL.md`. The review needs only that file. The
+  `scripts/` folder holds an optional Claude Code hook and its tests.
 
-The skill is markdown and the validator is one Python 3 file on the standard
-library plus PyYAML. Nothing here needs Claude Code, a network call, or a
-config file.
+The skills are markdown and the validator is one Python 3 file on the standard
+library plus PyYAML. Nothing here needs a network call. Only the optional
+`broken-windows` hook needs Claude Code and a config entry.
 
 ## Licence
 
