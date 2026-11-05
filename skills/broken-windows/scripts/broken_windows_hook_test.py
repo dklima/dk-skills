@@ -26,8 +26,9 @@ def run_raw(home, payload, **env):
     return result
 
 
-def run_hook(home, cwd, session, event, stop_active=False):
-    payload = json.dumps({"session_id": session, "cwd": cwd, "hook_event_name": event, "stop_hook_active": stop_active})
+def run_hook(home, cwd, session, event, stop_active=False, transcript=None):
+    payload = json.dumps({"session_id": session, "cwd": cwd, "hook_event_name": event, "stop_hook_active": stop_active,
+                          "transcript_path": transcript})
     result = run_raw(home, payload.encode())
     check(result.returncode == 0, f"hook exits 0 on {event}")
     return result.stdout.decode()
@@ -119,10 +120,60 @@ def test_resume_keeps_base(home):
     check(stop(home, repo, "s"), "resume keeps the first base")
 
 
-def test_missing_base_uses_head(home):
+def test_missing_base_saves_working_tree(home):
     repo = new_repo(home)
     write_lines(repo, "a.rb", 30)
-    check(stop(home, repo, "s"), "missing base falls back to HEAD")
+    check(not stop(home, repo, "s"), "missing base saves the working tree and does not block")
+    write_lines(repo, "b.rb", 30)
+    check(stop(home, repo, "s"), "work after the saved base blocks")
+
+
+def test_dirty_tree_at_start_does_not_count(home):
+    repo = new_repo(home)
+    write_lines(repo, "left.rb", 50)
+    run_hook(home, repo, "s", "SessionStart")
+    check(not stop(home, repo, "s"), "changes left by an earlier session do not block")
+
+
+def write_transcript(home, name, tool):
+    path = os.path.join(home, name)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as file:
+        file.write(json.dumps({"message": {"content": [{"type": "tool_use", "id": "t", "name": tool}]}}) + "\n")
+    return path
+
+
+def test_session_without_edits_does_not_block(home):
+    repo = new_repo(home)
+    run_hook(home, repo, "s", "SessionStart")
+    write_lines(repo, "other_agent.rb", 30)
+    transcript = write_transcript(home, "t/s.jsonl", "Bash")
+    check(not run_hook(home, repo, "s", "Stop", transcript=transcript), "session with no edit tool does not block")
+
+
+def test_edit_in_main_transcript_blocks(home):
+    repo = new_repo(home)
+    run_hook(home, repo, "s", "SessionStart")
+    write_lines(repo, "a.rb", 30)
+    transcript = write_transcript(home, "t/s.jsonl", "Edit")
+    check(blocked(run_hook(home, repo, "s", "Stop", transcript=transcript)), "edit in the main transcript blocks")
+
+
+def test_edit_in_subagent_transcript_blocks(home):
+    repo = new_repo(home)
+    run_hook(home, repo, "s", "SessionStart")
+    write_lines(repo, "a.rb", 30)
+    transcript = write_transcript(home, "t/s.jsonl", "Read")
+    write_transcript(home, "t/s/subagents/agent-1.jsonl", "Write")
+    check(blocked(run_hook(home, repo, "s", "Stop", transcript=transcript)), "edit in a subagent transcript blocks")
+
+
+def test_unreadable_transcript_keeps_hook_on(home):
+    repo = new_repo(home)
+    run_hook(home, repo, "s", "SessionStart")
+    write_lines(repo, "a.rb", 30)
+    missing = os.path.join(home, "t", "missing.jsonl")
+    check(blocked(run_hook(home, repo, "s", "Stop", transcript=missing)), "unreadable transcript keeps the hook on")
 
 
 def test_glob_and_non_ascii_paths(home):
@@ -202,7 +253,9 @@ def test_missing_base_object(home):
     with open(os.path.join(home, "state", "s"), "w") as file:
         file.write("0" * 40)
     write_lines(repo, "a.rb", 30)
-    check(stop(home, repo, "s"), "missing base object falls back to HEAD")
+    check(not stop(home, repo, "s"), "missing base object saves the working tree")
+    write_lines(repo, "b.rb", 30)
+    check(stop(home, repo, "s"), "work after a missing base object blocks")
 
 
 def test_first_stop_saves_base(home):
@@ -327,21 +380,24 @@ def test_session_start_outside_git(home):
     check(not os.path.exists(os.path.join(home, "state", "s")), "SessionStart outside git saves no state")
 
 
-def test_corrupt_state_uses_head(home):
+def test_corrupt_state_saves_working_tree(home):
     repo = new_repo(home)
     os.makedirs(os.path.join(home, "state"))
     with open(os.path.join(home, "state", "s"), "wb") as file:
         file.write(b"\xff\x00junk")
     write_lines(repo, "a.rb", 30)
-    check(stop(home, repo, "s"), "corrupt state falls back to HEAD")
+    check(not stop(home, repo, "s"), "corrupt state saves the working tree")
+    write_lines(repo, "b.rb", 30)
+    check(stop(home, repo, "s"), "work after corrupt state blocks")
 
 
 def test_non_utf8_cwd(home):
     repo = os.fsdecode(os.path.join(os.fsencode(home), b"caf\xe9"))
     os.makedirs(repo)
     sh(repo, "init", "-q")
-    write_lines(repo, "a.rb", 30)
     payload = b'{"session_id":"s","hook_event_name":"Stop","cwd":"' + os.fsencode(repo) + b'"}'
+    run_raw(home, payload)
+    write_lines(repo, "a.rb", 30)
     check(blocked(run_raw(home, payload).stdout.decode()), "non-UTF-8 byte in cwd works")
 
 

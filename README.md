@@ -115,7 +115,10 @@ repo to audit the code that exists already.
 Claude Code hook. It blocks the end of a session turn and asks for the review
 when the code changed since the session started has 30 or more lines, or adds a
 word such as `hack` or `workaround`. It counts commits, uncommitted edits and
-untracked files. After each request, it counts only newer changes.
+untracked files. After each request, it counts only newer changes. The session
+base is the working tree at session start, so edits left by an earlier session do
+not count. It blocks only when the session transcript, or a subagent transcript,
+has an `Edit`, `MultiEdit`, `Write` or `NotebookEdit` call.
 
 The plugin does not turn the hook on. Copy the skill to `~/.claude/skills/`, then
 add this to the `hooks` object in `~/.claude/settings.json`:
@@ -132,8 +135,11 @@ Merge these entries with the entries you have. The hook has these limits:
 - It turns off while an untracked file is bigger than 50 MB.
 - It counts only the file types in `CODE_FILE`, so a `.php` change never blocks.
 - It skips only the test paths in `TEST_FILE`, so `foo_test.py` counts as code.
-- It counts uncommitted edits that existed before the session, and a branch
-  switch or a rename counts too.
+- A branch switch or a rename during the session counts as a change.
+- It does not see a change made only through a shell command, such as `sed -i`.
+- It checks that the session edited a file, not which file. A session that edits
+  one repository can block on changes that another agent made in a second one.
+- With no saved base, the first Stop saves the working tree and does not block.
 - It writes loose objects to `.git`, and git prunes them later. After a prune,
   the hook can ask again for lines it already asked about.
 

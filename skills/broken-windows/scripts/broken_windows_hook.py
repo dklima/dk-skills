@@ -20,6 +20,8 @@ TEST_FILE = re.compile(rb"(?:_test\.go|\.test\.|\.spec\.|_spec\.rb|(?:\A|/)(?:te
 # Literal words only: a model call does not fit the 10 s hook timeout.
 WORKAROUND_MARKER = re.compile(rb"\b(?:workaround|work around|hack|hacky|kludge|quick fix|temp fix|temporary|fixme|for now)\b", re.I)
 STATE_OBJECT_ID = re.compile(rb"[0-9a-f]{40,64}")
+# shortcut: a file changed only through Bash (sed -i, a script) does not count, add Bash calls here if that misses real changes.
+EDIT_TOOL_USE = re.compile(rb'"name":\s*"(?:Edit|MultiEdit|Write|NotebookEdit)"')
 STATE_DIR = os.environ.get("BROKEN_WINDOWS_STATE_DIR", os.path.expanduser("~/.cache/claude-broken-windows"))
 
 
@@ -87,6 +89,30 @@ def snapshot_tree(top):
     return tree.decode().strip() if tree is not None else None
 
 
+# The base is the working tree at session start, so changes left by an earlier session do not count.
+def session_base(top):
+    return snapshot_tree(top) or head_or_empty(top)
+
+
+# Subagent transcripts are in <session>/subagents/, so edits done by a worker count too.
+def session_edited(transcript):
+    if not transcript:
+        return True
+    paths = [transcript]
+    subagents = os.path.join(os.path.splitext(transcript)[0], "subagents")
+    if os.path.isdir(subagents):
+        paths += [os.path.join(subagents, name) for name in os.listdir(subagents) if name.endswith(".jsonl")]
+    for path in paths:
+        try:
+            with open(path, "rb") as file:
+                if EDIT_TOOL_USE.search(file.read()):
+                    return True
+        except OSError:
+            if path == transcript:
+                return True
+    return False
+
+
 def changed_code(top, base, tree):
     numstat = git(top, "diff", "--numstat", "-z", "--no-renames", base, tree)
     if numstat is None:
@@ -129,12 +155,6 @@ def main():
         return
 
     state = os.path.join(STATE_DIR, session)
-
-    if data.get("hook_event_name") == "SessionStart":
-        if not os.path.exists(state):
-            save_state(state, head_or_empty(cwd))
-        return
-
     toplevel = git(cwd, "rev-parse", "--show-toplevel")
     if toplevel is None:
         return
@@ -142,10 +162,17 @@ def main():
     if has_big_untracked_file(top):
         return
 
+    if data.get("hook_event_name") == "SessionStart":
+        if not os.path.exists(state):
+            save_state(state, session_base(top))
+        return
+
     base = read_state(state)
     if not base or git(top, "cat-file", "-e", f"{base}^{{tree}}") is None:
-        base = head_or_empty(top)
-        save_state(state, base)
+        save_state(state, session_base(top))
+        return
+    if not session_edited(str(data.get("transcript_path") or "")):
+        return
     tree = snapshot_tree(top)
     if tree is None:
         return
